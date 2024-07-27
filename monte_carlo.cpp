@@ -1,5 +1,5 @@
 /*
-    Monte Carlo American Option Pricing
+    Monte Carlo American Option Pricing Calculator
     Roger Li
 
     Steps (Hull 27.8):
@@ -39,7 +39,7 @@ void simulate_GBM_path(double S0, double mu, double sigma, double T, int N, std:
 
     // Generate GBM path
     for (int i = 1; i < path.size(); ++i) {
-        double z_i = d(gen);  // random number from normal distribution.
+        double z_i = d(gen);  // random sample from normal distribution.
 
         // GBM formula (Hull 21.16):
         path[i] = path[i-1] * exp( (mu - sigma*sigma*0.5)*dt + (sigma*z_i*sqrt(dt)) );
@@ -48,8 +48,7 @@ void simulate_GBM_path(double S0, double mu, double sigma, double T, int N, std:
 
 double discount_price(double S, double r, double t)
 {
-    double discounted_price = S * exp( -1*r*t );
-    return discounted_price;
+    return S * exp( -1*r*t );   // t should be in days. Assumes continuous compounding.
 }
 
 void simulate_price_paths(double S0, double mu, double sigma, double T, 
@@ -68,8 +67,29 @@ void calculate_intrinsic_values(double K, bool is_call, int exercise_point,
     {
         // call: S - K; put: K - S
         cf_matrix[cur_row][exercise_point] = 
-            std::max(price_matrix[cur_row][exercise_point] - K, 0.0) ? is_call :
+            is_call ? 
+            std::max(price_matrix[cur_row][exercise_point] - K, 0.0) :
             std::max(K - price_matrix[cur_row][exercise_point], 0.0);
+    }
+}
+
+void perform_simple_linear_regression(std::vector<double>& x, 
+    std::vector<double>& y, std::vector<double>results)
+{
+
+}
+
+void calculate_continuation_value()
+{
+
+}
+
+void update_cash_flow_at_exercise_point(std::vector<int>& x, 
+    std::vector<int>& y, int exercise_point, std::vector<std::vector<double>>& cf_matrix)
+{
+    for (int i = 0; i < x.size(); i++)
+    {
+        cf_matrix[x[i]][exercise_point] = y[i];
     }
 }
 
@@ -83,18 +103,25 @@ void lsmc_american_option_pricing(double S0, double mu, double sigma, double T,
     // perform GBM simulation for underlying asset price.
     simulate_price_paths(S0, mu, sigma, T, N, K, is_call, simulated_price_paths);
 
-    // 
+    // fill out last exercise point with intrinsic values.
+    calculate_intrinsic_values(K, is_call, simulated_price_paths[0].size()-1, 
+        simulated_price_paths, cash_flow_paths);
+
+    for (int cur_exercise_pt = cash_flow_paths[0].size()-2; cur_exercise_pt > -1; cur_exercise_pt--)
+    {
+        
+    }
 }
 
 int main()
 {
     lsmc_american_option_pricing(
-        100.00, 
-        -0.075/365, 
-        0.2/365, 
-        30, 
-        30, 
-        100.00, 
+        100.00,
+        0.075/365,
+        0.5/365,
+        7,
+        7,
+        100.00,
         true,
         5
     );
