@@ -25,6 +25,7 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <numeric>
 
 void simulate_GBM_path(double S0, double mu, double sigma, double T, int N, std::vector<double>& path)
 {
@@ -60,28 +61,64 @@ void simulate_price_paths(double S0, double mu, double sigma, double T,
     }
 }
 
-void calculate_intrinsic_values(double K, bool is_call, int exercise_point,
-    std::vector<std::vector<double>>& price_matrix, std::vector<std::vector<double>>& cf_matrix)
+void get_immediate_payoff_samples(double K, bool is_call, int exercise_point,
+    std::vector<std::vector<double>>& price_matrix, std::vector<double>& cfs)
 {
     for (int cur_row = 0; cur_row < price_matrix.size(); cur_row++)
     {
         // call: S - K; put: K - S
-        cf_matrix[cur_row][exercise_point] = 
+        cfs[cur_row] = 
             is_call ? 
             std::max(price_matrix[cur_row][exercise_point] - K, 0.0) :
             std::max(K - price_matrix[cur_row][exercise_point], 0.0);
     }
 }
 
-void perform_simple_linear_regression(std::vector<double>& x, 
+void perform_linear_regression(std::vector<double>& x, 
     std::vector<double>& y, std::vector<double>results)
 {
+    int n = x.size();
 
+    double sumX = std::accumulate(x.begin(), x.end(), 0.0);
+    double sumY = std::accumulate(y.begin(), y.end(), 0.0);
+    double sumXY = 0.0;
+    double sumX2 = 0.0;
+
+    for (int i = 0; i < n; ++i) {
+        sumXY += x[i] * y[i];
+        sumX2 += x[i] * x[i];
+    }
+
+    double denominator = (n * sumX2 - sumX * sumX);
+    if (denominator == 0) {
+        std::cerr << "Error: Denominator is zero. Check your input data." << std::endl;
+        return;
+    }
+
+    double m = (n * sumXY - sumX * sumY) / denominator;
+    double b = (sumY * sumX2 - sumX * sumXY) / denominator;
+
+    results[0] = m;
+    results[1] = b;
 }
 
-void calculate_continuation_value()
+void get_continuation_samples(std::vector<int>& optimal_exercise_pt,
+    std::vector<double>& optimal_exercise_payoff, int r, int cur_t, double dt, 
+    std::vector<double>& discounted_cont_val_samples)
 {
-
+    for (int cur_path = 0; cur_path < discounted_cont_val_samples.size(); cur_path++)
+    {
+        if (optimal_exercise_pt[cur_path] == -1)
+        {
+            discounted_cont_val_samples[cur_path] = 0.0;
+            continue;
+        }
+        discounted_cont_val_samples[cur_path] = 
+            discount_price(optimal_exercise_payoff[cur_path],
+            r,
+            (optimal_exercise_pt[cur_path] - cur_t) * dt
+        );
+    }
 }
 
 void update_cash_flow_at_exercise_point(std::vector<int>& x, 
@@ -98,18 +135,32 @@ void lsmc_american_option_pricing(double S0, double mu, double sigma, double T,
 {
     // initialize matrices.
     std::vector<std::vector<double>> simulated_price_paths(num_paths, std::vector<double>(N+1, 0.0));
-    std::vector<std::vector<double>> cash_flow_paths(num_paths, std::vector<double>(N+1, 0.0));
+    std::vector<int> optimal_exercist_pt(num_paths, -1);
+    std::vector<double> optimal_exercise_payoff(num_paths);
 
     // perform GBM simulation for underlying asset price.
     simulate_price_paths(S0, mu, sigma, T, N, K, is_call, simulated_price_paths);
 
-    // fill out last exercise point with intrinsic values.
-    calculate_intrinsic_values(K, is_call, simulated_price_paths[0].size()-1, 
-        simulated_price_paths, cash_flow_paths);
+    // handle first iteration.
+    get_immediate_payoff_samples(K, is_call, N,
+        simulated_price_paths, optimal_exercise_payoff);
+    for (int i = 0; i < optimal_exercise_payoff.size(); i++)
+        if (optimal_exercise_payoff[i] > 0.0) 
+            optimal_exercist_pt[i] = optimal_exercise_payoff[i];
 
-    for (int cur_exercise_pt = cash_flow_paths[0].size()-2; cur_exercise_pt > -1; cur_exercise_pt--)
+    // perform the main loop for LSMC
+    std::vector<double> immediate_payoff_samples(num_paths);
+    std::vector<double> discounted_continuation_value_samples(num_paths);
+    std::vector<double> regression_results(2);
+    for (int cur_exercise_pt = simulated_price_paths[0].size()-2; 
+        cur_exercise_pt > -1; cur_exercise_pt--)
     {
-        
+        get_immediate_payoff_samples(K, is_call, cur_exercise_pt, 
+            simulated_price_paths, immediate_payoff_samples);
+        get_continuation_samples(optimal_exercist_pt, optimal_exercise_payoff,
+            mu, cur_exercise_pt, T/N, discounted_continuation_value_samples);
+        perform_linear_regression(discounted_continuation_value_samples,
+            immediate_payoff_samples, regression_results);
     }
 }
 
@@ -123,7 +174,7 @@ int main()
         7,
         100.00,
         true,
-        5
+        10
     );
 
     // for (auto rowIt = paths.begin(); rowIt != paths.end(); ++rowIt) {
