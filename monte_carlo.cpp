@@ -75,7 +75,7 @@ void get_immediate_payoff_samples(double K, bool is_call, int exercise_point,
 }
 
 void perform_linear_regression(std::vector<double>& x, 
-    std::vector<double>& y, std::vector<double>results)
+    std::vector<double>& y, std::vector<double>& results)
 {
     int n = x.size();
 
@@ -91,7 +91,7 @@ void perform_linear_regression(std::vector<double>& x,
 
     double denominator = (n * sumX2 - sumX * sumX);
     if (denominator == 0) {
-        std::cerr << "Error: Denominator is zero. Check your input data." << std::endl;
+        std::cerr << "Error: Denominator is zero. Check your input data. " << n << " " << sumX << " " << sumY << std::endl;
         return;
     }
 
@@ -121,21 +121,41 @@ void get_continuation_samples(std::vector<int>& optimal_exercise_pt,
     }
 }
 
-void update_cash_flow_at_exercise_point(std::vector<int>& x, 
-    std::vector<int>& y, int exercise_point, std::vector<std::vector<double>>& cf_matrix)
+double get_estimated_continuation_value(std::vector<double>& regression_results, double x)
 {
-    for (int i = 0; i < x.size(); i++)
-    {
-        cf_matrix[x[i]][exercise_point] = y[i];
+    // TODO: give user the ability to choose method of regression (linear, polynomial...)
+    switch (regression_results.size()) {
+        case 1:
+            return regression_results[0] * x + regression_results[1];
+        default:
+            return regression_results[0] * x + regression_results[1];
     }
 }
 
-void lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
+void update_optimal_values(int cur_exercise_pt, std::vector<double>& regression_results, 
+    std::vector<int>& optimal_exercise_pt, std::vector<double>& optimal_exercise_payoff,
+    std::vector<double>& immediate_payoff)
+{
+    for (int path = 0; path < immediate_payoff.size(); path++)
+    {
+        if (immediate_payoff[path] <= 0.0) continue;
+        double estimated_continuation_value = get_estimated_continuation_value(
+            regression_results, immediate_payoff[path]
+        );
+        if (estimated_continuation_value < immediate_payoff[path])
+        {
+            optimal_exercise_pt[path] = cur_exercise_pt;
+            optimal_exercise_payoff[path] = immediate_payoff[path];
+        }
+    }
+}
+
+double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
     int N, double K, bool is_call, int num_paths)
 {
     // initialize matrices.
     std::vector<std::vector<double>> simulated_price_paths(num_paths, std::vector<double>(N+1, 0.0));
-    std::vector<int> optimal_exercist_pt(num_paths, -1);
+    std::vector<int> optimal_exercise_pt(num_paths, -1);
     std::vector<double> optimal_exercise_payoff(num_paths);
 
     // perform GBM simulation for underlying asset price.
@@ -146,7 +166,7 @@ void lsmc_american_option_pricing(double S0, double mu, double sigma, double T,
         simulated_price_paths, optimal_exercise_payoff);
     for (int i = 0; i < optimal_exercise_payoff.size(); i++)
         if (optimal_exercise_payoff[i] > 0.0) 
-            optimal_exercist_pt[i] = optimal_exercise_payoff[i];
+            optimal_exercise_pt[i] = optimal_exercise_payoff[i];
 
     // perform the main loop for LSMC
     std::vector<double> immediate_payoff_samples(num_paths);
@@ -157,21 +177,46 @@ void lsmc_american_option_pricing(double S0, double mu, double sigma, double T,
     {
         get_immediate_payoff_samples(K, is_call, cur_exercise_pt, 
             simulated_price_paths, immediate_payoff_samples);
-        get_continuation_samples(optimal_exercist_pt, optimal_exercise_payoff,
+        get_continuation_samples(optimal_exercise_pt, optimal_exercise_payoff,
             mu, cur_exercise_pt, T/N, discounted_continuation_value_samples);
         perform_linear_regression(discounted_continuation_value_samples,
             immediate_payoff_samples, regression_results);
+        update_optimal_values(cur_exercise_pt, regression_results, 
+            optimal_exercise_pt, optimal_exercise_payoff, immediate_payoff_samples);
     }
+
+    // add and average.
+    double sum = 0.0;
+    for (int path = 0; path < optimal_exercise_pt.size(); path++)
+    {
+        if (optimal_exercise_pt[path] == -1) continue;
+        sum += discount_price(optimal_exercise_payoff[path],
+            mu, optimal_exercise_pt[path] * (T/N));
+    }
+
+    double estimated_price = sum / num_paths;
+
+    for (auto rowIt = optimal_exercise_pt.begin(); rowIt != optimal_exercise_pt.end(); ++rowIt) {
+        std::cout << *rowIt << " ";
+    }
+    // std::cout << "" << std::endl;
+    // for (auto rowIt = optimal_exercise_payoff.begin(); rowIt != optimal_exercise_payoff.end(); ++rowIt) {
+    //     std::cout << *rowIt << " ";
+    // }
+
+    // std::cout << estimated_price << std::endl;
+
+    return estimated_price;
 }
 
 int main()
 {
     lsmc_american_option_pricing(
         100.00,
-        0.075/365,
-        0.5/365,
-        7,
-        7,
+        0.05/365,
+        0.7/365,
+        365,
+        365*10,
         100.00,
         true,
         10
@@ -182,6 +227,10 @@ int main()
     //         std::cout << *colIt << " "; // Dereferencing colIt to access the value
     //     }
     //     std::cout << std::endl;
+    // }
+
+    // for (auto rowIt = paths.begin(); rowIt != paths.end(); ++rowIt) {
+    //     std::cout << *colIt << " "; // Dereferencing colIt to access the value
     // }
 
     return 0;
