@@ -7,14 +7,14 @@
             background-color: #d4d4a0;
             /* font-family: Arial;  */
         }
-        .bottom-right {
+        .footer {
             display: flex;
-            flex-direction: column;
-            justify-content: flex-end; /* Align children to the bottom */
-            align-items: flex-end; /* Align children to the right */
+            flex-direction: row;
+            justify-content: center; /* Align children to the bottom */
             width: 100%; /* Adjust as needed */
-            overflow:visible; /* Enable scrolling if content overflows */
             color: rgb(62, 59, 59);
+            padding: 10px;
+            gap: 50px; /* Space between items */
         }
         #container {
             max-width: 600px;
@@ -41,40 +41,41 @@
 <body>
     <div id="container">
         <h1>Least Square Monte Carlo Options Pricing Calculator</h1>
-        <p>This calculator provides an estimation for the value of American (and European) options using the Least Square Monte Carlo method. This calculator assumes constant volatility, 0% dividend yield, and continuously compounded risk-free rate.</p>
+        <p>This calculator provides estimations for the value of a given American (or European) options using the Least Square Monte Carlo method. This calculator assumes constant volatility, 0% dividend yield, and continuously compounded risk-free rate.</p>
+        <p>Visit the Github repository <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">here</a>.</p>
         <p><i>All fields are mandatory.</i></p>
         <hr/>
         <form id="optionForm">
-            <h3>Calculation Parameters</h3>
-            <label for="S0">Initial Stock Price (S0):</label>
+            <h3>Valuation Parameters</h3>
+            <label for="S0">Initial Stock Price (S0, in $):</label>
             <input type="number" id="S0" name="S0" step="0.01" placeholder="100.00" required><br>
 
-            <label for="mu">Annualized Risk-free Rate (r):</label>
+            <label for="mu">Annual Risk-free Rate (r):</label>
             <input type="number" id="mu" name="mu" step="0.0001" placeholder="0.05" required><br>
 
-            <label for="sigma">Annualized Volatility (sigma):</label>
+            <label for="sigma">Annual Volatility (sigma):</label>
             <input type="number" id="sigma" name="sigma" step="0.0001" placeholder="0.25" required><br>
 
-            <label for="T">Time to Maturity (T):</label>
+            <label for="T">Time to Maturity (T, in days):</label>
             <input type="number" id="T" name="T" placeholder="30" required><br>
 
             <label for="N">Number of Time Steps (N):</label>
             <input type="number" id="N" name="N" placeholder="300" required><br>
 
-            <label for="K">Strike Price (K):</label>
+            <label for="K">Strike Price (K, in $):</label>
             <input type="number" id="K" name="K" placeholder="75.00" step="0.01" required><br>
 
             <label for="is_call">Is Call Option (uncheck if Put):</label>
             <input type="checkbox" id="is_call" name="is_call" checked><br>
 
-            <label for="is_european">Is European Option:</label>
+            <label for="is_european">Is European Option (uncheck if American):</label>
             <input type="checkbox" id="is_european" name="is_european"><br>
 
             <label for="num_paths">Number of Simulation Paths:</label>
             <input type="number" id="num_paths" name="num_paths" placeholder="10000" required><br>
 
             <h3>Optimization Parameters</h3>
-            <label for="num_paths">Number of Threads for GBM Paths Simulation*:</label>
+            <label for="num_paths">Number of Threads for GBM Price Paths Simulation*:</label>
             <input type="number" id="num_threads" name="num_threads" required value="1" disabled><br>
 
             <label for="num_paths">Use Simple Linear Regression (uncheck for 2nd-degree polynomial)*:</label>
@@ -105,13 +106,15 @@
     
     <hr/>
     
-    <p class="bottom-right">
-        Personal Project by 
-        <a href="https://rogerli.net/">Roger Li</a>
-        <br>
-        <a href="https://rogerli.net/">GitHub</a>
+    <div class="footer">
+        <div>
+            <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">GitHub</a>
+        </div>
+        <div>
+            <a href="https://rogerli.net/">Roger Li</a>
+        </div>
 
-    </p>
+    </div>
 
     </div>
 
@@ -129,47 +132,53 @@
 
     <script>
         function calculateOptionPrice() {
-            // Get form values
-            var S0 = parseFloat(document.getElementById('S0').value);
-            var mu = parseFloat(document.getElementById('mu').value);
-            var sigma = parseFloat(document.getElementById('sigma').value);
-            var T = parseInt(document.getElementById('T').value);
-            var N = parseInt(document.getElementById('N').value);
-            var K = parseFloat(document.getElementById('K').value);
-            var is_call = document.getElementById('is_call').checked ? 1 : 0;
-            var num_paths = parseInt(document.getElementById('num_paths').value);
-            var is_european = document.getElementById('is_european').checked ? 1 : 0;
+            document.getElementById('result').innerText = "Calculating...";
 
-            // Call the WASM function
-            var result = Module.ccall(
-                'lsmc_american_option_pricing_WASM', // Name of the C++ function
-                'number', // Return type
-                [ // Argument types
-                    'number', // S0
-                    'number', // mu
-                    'number', // sigma
-                    'number', // T
-                    'number', // N
-                    'number', // K
-                    'number', // is_call (use number to represent boolean)
-                    'number', // num_paths
-                    'number'  // is_european (use number to represent boolean)
-                ],
-                [ // Arguments
-                    S0,         // S0
-                    mu,         // mu
-                    sigma,      // sigma
-                    T,          // T
-                    N,          // N
-                    K,          // K
-                    is_call,    // is_call (1 for true, 0 for false)
-                    num_paths,  // num_paths
-                    is_european // is_european (1 for true, 0 for false)
-                ]
-            );
+            // Use setTimeout to allow the "Calculating..." text to be rendered
+            setTimeout(function() {
+                // Get form values
+                var S0 = parseFloat(document.getElementById('S0').value);
+                var mu = parseFloat(document.getElementById('mu').value);
+                var sigma = parseFloat(document.getElementById('sigma').value);
+                var T = parseInt(document.getElementById('T').value);
+                var N = parseInt(document.getElementById('N').value);
+                var K = parseFloat(document.getElementById('K').value);
+                var is_call = document.getElementById('is_call').checked ? 1 : 0;
+                var num_paths = parseInt(document.getElementById('num_paths').value);
+                var is_european = document.getElementById('is_european').checked ? 1 : 0;
+                var num_threads = parseInt(document.getElementById('num_threads').value);
 
-            // Display the result
-            document.getElementById('result').innerText = '$' + Math.round(result * 100)/100;
+                // Call the WASM function
+                var result = Module.ccall(
+                    'lsmc_american_option_pricing_WASM', // Name of the C++ function
+                    'number', // Return type
+                    [ // Argument types
+                        'number', // S0
+                        'number', // mu
+                        'number', // sigma
+                        'number', // T
+                        'number', // N
+                        'number', // K
+                        'number', // is_call (use number to represent boolean)
+                        'number', // num_paths
+                        'number', // is_european (use number to represent boolean)
+                    ],
+                    [ // Arguments
+                        S0,         // S0
+                        mu,         // mu
+                        sigma,      // sigma
+                        T,          // T
+                        N,          // N
+                        K,          // K
+                        is_call,    // is_call (1 for true, 0 for false)
+                        num_paths,  // num_paths
+                        is_european,// is_european (1 for true, 0 for false)
+                    ]
+                );
+
+                // Display the result
+                document.getElementById('result').innerText = '$' + Math.round(result * 100)/100;
+            }, 0);
         }
     </script>
 </body>

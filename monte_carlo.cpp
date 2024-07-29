@@ -112,7 +112,7 @@ void perform_linear_regression(std::vector<double>& x,
 
     double denominator = (n * sumX2 - sumX * sumX);
     if (denominator == 0) {
-        std::cerr << "Error: Denominator is zero. Check your input data. " << n << " " << sumX << " " << sumY << std::endl;
+        std::cerr << "Error: Denominator is zero. Check your input data. " << n << " " << sumX << " " << sumY << " " << n << std::endl;
         return;
     }
 
@@ -174,9 +174,6 @@ void update_optimal_values(int cur_exercise_pt, std::vector<double>& regression_
 double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
     int N, double K, bool is_call, int num_paths, bool is_european=false)
 {
-    // std::cout << "Inputs... "  << S0 << ' ' << mu << ' ' << sigma << ' ' << T 
-    // << ' ' << N << ' ' << K << ' ' << is_call << ' ' << num_paths << ' ' << is_european;
-
     // daily-fy data:
     mu = mu / 365;
     sigma = sigma / sqrt(365);
@@ -242,20 +239,3 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
 
     return estimated_price;
 }
-
-// int main()
-// {
-//     lsmc_american_option_pricing(
-//         100.00,
-//         0.075/365,
-//         0.50/sqrt(365),
-//         365,
-//         365,
-//         150.0,
-//         true,
-//         10000,
-//         true
-//     );
-
-//     return 0;
-// }
