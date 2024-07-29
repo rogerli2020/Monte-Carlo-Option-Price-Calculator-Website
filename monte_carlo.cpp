@@ -61,7 +61,7 @@ void simulate_price_paths(double S0, double mu, double sigma, double T,
     }
 }
 
-void get_immediate_payoff_samples(double K, bool is_call, int exercise_point,
+bool get_immediate_payoff_samples(double K, bool is_call, int exercise_point,
     std::vector<std::vector<double>>& price_matrix, std::vector<double>& cfs)
 {
     bool hasInTheMoneyPaths = false;
@@ -76,9 +76,8 @@ void get_immediate_payoff_samples(double K, bool is_call, int exercise_point,
             hasInTheMoneyPaths = true;
         }
     }
-    if (!hasInTheMoneyPaths) {
-        cfs.clear(); // Clear the cfs vector to indicate no in-the-money paths
-    }
+    if (!hasInTheMoneyPaths) return false;
+    return true;
 }
 
 
@@ -110,7 +109,7 @@ void perform_linear_regression(std::vector<double>& x,
     results[1] = b;
 }
 
-void get_continuation_samples(std::vector<int>& optimal_exercise_pt,
+bool get_continuation_samples(std::vector<int>& optimal_exercise_pt,
     std::vector<double>& optimal_exercise_payoff, double r, int cur_t, double dt, 
     std::vector<double>& discounted_cont_val_samples)
 {
@@ -131,9 +130,8 @@ void get_continuation_samples(std::vector<int>& optimal_exercise_pt,
             hasContinuationValues = true;
         }
     }
-    if (!hasContinuationValues) {
-        discounted_cont_val_samples.clear(); // Clear the vector to indicate no continuation values
-    }
+    if (!hasContinuationValues) return false;
+    return true;
 }
 
 double get_estimated_continuation_value(std::vector<double>& regression_results, double x)
@@ -160,7 +158,7 @@ void update_optimal_values(int cur_exercise_pt, std::vector<double>& regression_
 }
 
 double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
-    int N, double K, bool is_call, int num_paths)
+    int N, double K, bool is_call, int num_paths, bool is_european=false)
 {
     // initialize matrices.
     std::vector<std::vector<double>> simulated_price_paths(num_paths, std::vector<double>(N+1, 0.0));
@@ -173,27 +171,39 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     // handle first iteration.
     get_immediate_payoff_samples(K, is_call, N,
         simulated_price_paths, optimal_exercise_payoff);
-    for (int i = 0; i < optimal_exercise_payoff.size(); i++) 
+    for (int path = 0; path < optimal_exercise_payoff.size(); path++) 
     {
-        std::cout << optimal_exercise_payoff[i] << std::endl;
-        if (optimal_exercise_payoff[i] > 0.0)   optimal_exercise_pt[i] = optimal_exercise_payoff[N];
+        if (optimal_exercise_payoff[path] > 0.0)   
+            optimal_exercise_pt[path] = N;
     }
 
     // perform the main loop for LSMC
-    std::vector<double> immediate_payoff_samples(num_paths);
-    std::vector<double> discounted_continuation_value_samples(num_paths);
-    std::vector<double> regression_results(2);
-    for (int cur_exercise_pt = simulated_price_paths[0].size()-245; 
-        cur_exercise_pt > -1; cur_exercise_pt--)
+    if (!is_european)
     {
-        get_immediate_payoff_samples(K, is_call, cur_exercise_pt, simulated_price_paths, immediate_payoff_samples);
-        if (immediate_payoff_samples.empty()) continue; // Skip if no in-the-money paths
-
-        get_continuation_samples(optimal_exercise_pt, optimal_exercise_payoff, mu, cur_exercise_pt, T/N, discounted_continuation_value_samples);
-        if (discounted_continuation_value_samples.empty()) continue; // Skip if no continuation values
-
-        perform_linear_regression(immediate_payoff_samples, discounted_continuation_value_samples, regression_results);
-        update_optimal_values(cur_exercise_pt, regression_results, optimal_exercise_pt, optimal_exercise_payoff, immediate_payoff_samples);
+        std::vector<double> immediate_payoff_samples(num_paths);
+        std::vector<double> discounted_continuation_value_samples(num_paths);
+        std::vector<double> regression_results(2);
+        for (int cur_exercise_pt = simulated_price_paths[0].size()-2; 
+            cur_exercise_pt > -1; cur_exercise_pt--)
+        {
+            if (
+                !get_immediate_payoff_samples(
+                    K, is_call, cur_exercise_pt, 
+                    simulated_price_paths, immediate_payoff_samples
+                )
+            ) continue;
+            if (
+                !get_continuation_samples(
+                    optimal_exercise_pt, optimal_exercise_payoff, 
+                    mu, cur_exercise_pt, T/N, 
+                    discounted_continuation_value_samples
+                )
+            ) continue;
+            perform_linear_regression(immediate_payoff_samples, 
+                discounted_continuation_value_samples, regression_results);
+            update_optimal_values(cur_exercise_pt, regression_results, 
+                optimal_exercise_pt, optimal_exercise_payoff, immediate_payoff_samples);
+        }
     }
 
     // add and average.
@@ -201,6 +211,7 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     for (int path = 0; path < optimal_exercise_pt.size(); path++)
     {
         if (optimal_exercise_pt[path] == -1) continue;
+        // std::cout << optimal_exercise_pt[path] << std::endl;
         sum += discount_price(optimal_exercise_payoff[path],
             mu, optimal_exercise_pt[path] * (T/N));
     }
@@ -215,14 +226,15 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
 int main()
 {
     lsmc_american_option_pricing(
-        1.00,
-        0.1/365,
-        0.5/sqrt(365),
+        100.00,
+        0.075/365,
+        0.50/sqrt(365),
         365,
         365,
-        50.0,
-        false,
-        3
+        150.0,
+        true,
+        10000,
+        true
     );
 
     // for (auto rowIt = paths.begin(); rowIt != paths.end(); ++rowIt) {
