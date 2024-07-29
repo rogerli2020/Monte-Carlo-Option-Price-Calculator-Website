@@ -22,10 +22,24 @@
         8. Discount all cashflow in all paths, get average.
 */
 
+// emcc monte_carlo.cpp -o lsmc_calculator.js -s EXPORTED_FUNCTIONS='["_lsmc_american_option_pricing_WASM"]' -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s ALLOW_MEMORY_GROWTH=1
+
 #include <iostream>
 #include <cmath>
 #include <random>
 #include <numeric>
+
+extern "C" {
+    double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
+        int N, double K, bool is_call, int num_paths, bool is_european);
+
+    double lsmc_american_option_pricing_WASM(
+        double S0, double mu, double sigma, double T, 
+        int N, double K, bool is_call, int num_paths, bool is_european
+    ) {
+        return lsmc_american_option_pricing(S0, mu, sigma, T, N, K, is_call, num_paths, is_european);
+    }
+}
 
 void simulate_GBM_path(double S0, double mu, double sigma, double T, int N, std::vector<double>& path)
 {
@@ -160,6 +174,13 @@ void update_optimal_values(int cur_exercise_pt, std::vector<double>& regression_
 double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
     int N, double K, bool is_call, int num_paths, bool is_european=false)
 {
+    // std::cout << "Inputs... "  << S0 << ' ' << mu << ' ' << sigma << ' ' << T 
+    // << ' ' << N << ' ' << K << ' ' << is_call << ' ' << num_paths << ' ' << is_european;
+
+    // daily-fy data:
+    mu = mu / 365;
+    sigma = sigma / sqrt(365);
+
     // initialize matrices.
     std::vector<std::vector<double>> simulated_price_paths(num_paths, std::vector<double>(N+1, 0.0));
     std::vector<int> optimal_exercise_pt(num_paths, -1);
@@ -211,7 +232,6 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     for (int path = 0; path < optimal_exercise_pt.size(); path++)
     {
         if (optimal_exercise_pt[path] == -1) continue;
-        // std::cout << optimal_exercise_pt[path] << std::endl;
         sum += discount_price(optimal_exercise_payoff[path],
             mu, optimal_exercise_pt[path] * (T/N));
     }
@@ -223,30 +243,19 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     return estimated_price;
 }
 
-int main()
-{
-    lsmc_american_option_pricing(
-        100.00,
-        0.075/365,
-        0.50/sqrt(365),
-        365,
-        365,
-        150.0,
-        true,
-        10000,
-        true
-    );
+// int main()
+// {
+//     lsmc_american_option_pricing(
+//         100.00,
+//         0.075/365,
+//         0.50/sqrt(365),
+//         365,
+//         365,
+//         150.0,
+//         true,
+//         10000,
+//         true
+//     );
 
-    // for (auto rowIt = paths.begin(); rowIt != paths.end(); ++rowIt) {
-    //     for (auto colIt = rowIt->begin(); colIt != rowIt->end(); ++colIt) {
-    //         std::cout << *colIt << " "; // Dereferencing colIt to access the value
-    //     }
-    //     std::cout << std::endl;
-    // }
-
-    // for (auto rowIt = paths.begin(); rowIt != paths.end(); ++rowIt) {
-    //     std::cout << *colIt << " "; // Dereferencing colIt to access the value
-    // }
-
-    return 0;
-}
+//     return 0;
+// }
