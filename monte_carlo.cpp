@@ -112,7 +112,9 @@ void perform_linear_regression(std::vector<double>& x,
 
     double denominator = (n * sumX2 - sumX * sumX);
     if (denominator == 0) {
-        std::cerr << "Error: Denominator is zero. Check your input data. " << n << " " << sumX << " " << sumY << " " << n << std::endl;
+        // std::cerr << "Error: Denominator is zero. Check your input data. " << sumX2 << " " << sumX << " " << denominator << std::endl;
+        results[0] = 1;
+        results[1] = 0;
         return;
     }
 
