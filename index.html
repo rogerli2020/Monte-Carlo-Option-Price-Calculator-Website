@@ -40,10 +40,10 @@
 </head>
 <body>
     <div id="container">
-        <h1>Least Square Monte Carlo Options Pricing Calculator</h1>
-        <p>This calculator provides estimations for the value of a given American (or European) options using the Least Square Monte Carlo method. This calculator assumes constant volatility, 0% dividend yield, and continuously compounded risk-free rate.</p>
-        <p>Visit the Github repository <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">here</a>.</p>
-        <p><i>All fields are mandatory.</i></p>
+        <h1>Least-Squares Monte Carlo Options Pricing Calculator</h1>
+        <p>This calculator provides estimations for the value of a given American (or European) options using the Least-Squares Monte Carlo method. This calculator assumes constant volatility, 0% dividend yield, and continuously compounded risk-free rate.</p>
+        <p>Visit the GitHub repository <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">here</a>.</p>
+        <p><i>All fields are required.</i></p>
         <hr/>
         <form id="optionForm">
             <h3>Valuation Parameters</h3>
@@ -75,12 +75,14 @@
             <input type="number" id="num_paths" name="num_paths" placeholder="10000" required><br>
 
             <h3>Optimization Parameters</h3>
-            <label for="num_paths">Number of Threads for GBM Price Paths Simulation*:</label>
+            <label for="num_paths">Number of threads for GBM price paths simulation*:</label>
             <input type="number" id="num_threads" name="num_threads" required value="1" disabled><br>
 
-            <label for="num_paths">Use Simple Linear Regression (uncheck for 2nd-degree polynomial)*:</label>
-            <input type="checkbox" id="use_linear" name="use_linear" checked disabled>
-            <br>
+            <label for="num_paths">Use simple linear regression (uncheck for 2nd-degree polynomial)*:</label>
+            <input type="checkbox" id="use_linear" name="use_linear" checked disabled><br>
+
+            <label for="num_paths">Use antithetic variates for variance reduction*:</label>
+            <input type="checkbox" id="use_linear" name="use_linear" disabled><br>
 
             <div style="
                 width: 100%;
