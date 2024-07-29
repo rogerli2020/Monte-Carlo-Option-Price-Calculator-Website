@@ -173,15 +173,17 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     // handle first iteration.
     get_immediate_payoff_samples(K, is_call, N,
         simulated_price_paths, optimal_exercise_payoff);
-    for (int i = 0; i < optimal_exercise_payoff.size(); i++)
-        if (optimal_exercise_payoff[i] > 0.0) 
-            optimal_exercise_pt[i] = optimal_exercise_payoff[N];
+    for (int i = 0; i < optimal_exercise_payoff.size(); i++) 
+    {
+        std::cout << optimal_exercise_payoff[i] << std::endl;
+        if (optimal_exercise_payoff[i] > 0.0)   optimal_exercise_pt[i] = optimal_exercise_payoff[N];
+    }
 
     // perform the main loop for LSMC
     std::vector<double> immediate_payoff_samples(num_paths);
     std::vector<double> discounted_continuation_value_samples(num_paths);
     std::vector<double> regression_results(2);
-    for (int cur_exercise_pt = simulated_price_paths[0].size()-2; 
+    for (int cur_exercise_pt = simulated_price_paths[0].size()-245; 
         cur_exercise_pt > -1; cur_exercise_pt--)
     {
         get_immediate_payoff_samples(K, is_call, cur_exercise_pt, simulated_price_paths, immediate_payoff_samples);
@@ -205,15 +207,7 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
 
     double estimated_price = sum / num_paths;
 
-    for (auto rowIt = optimal_exercise_pt.begin(); rowIt != optimal_exercise_pt.end(); ++rowIt) {
-        std::cout << *rowIt << " ";
-    }
-    // std::cout << "" << std::endl;
-    // for (auto rowIt = optimal_exercise_payoff.begin(); rowIt != optimal_exercise_payoff.end(); ++rowIt) {
-    //     std::cout << *rowIt << " ";
-    // }
-
-    std::cout << std::endl << estimated_price << std::endl;
+    std::cout << estimated_price << std::endl;
 
     return estimated_price;
 }
@@ -221,14 +215,14 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
 int main()
 {
     lsmc_american_option_pricing(
-        100.00,
-        0.05/365,
-        0.01/ sqrt(365),
+        1.00,
+        0.1/365,
+        0.5/sqrt(365),
         365,
         365,
-        75.00,
-        true,
-        1000
+        50.0,
+        false,
+        3
     );
 
     // for (auto rowIt = paths.begin(); rowIt != paths.end(); ++rowIt) {
