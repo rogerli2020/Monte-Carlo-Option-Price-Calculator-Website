@@ -71,18 +71,21 @@
             <label for="is_european">Is European Option (uncheck if American):</label>
             <input type="checkbox" id="is_european" name="is_european"><br>
 
+
+            <h3>Simulation Parameters</h3>
+
             <label for="num_paths">Number of Simulation Paths:</label>
             <input type="number" id="num_paths" name="num_paths" placeholder="10000" required><br>
 
-            <h3>Optimization Parameters</h3>
+            <label for="num_paths">Use antithetic variates for variance reduction*:</label>
+            <input type="checkbox" id="reduce_variance" name="reduce_variance"><br>
+
             <label for="num_paths">Number of threads for GBM price paths simulation*:</label>
             <input type="number" id="num_threads" name="num_threads" required value="1" disabled><br>
 
             <label for="num_paths">Use simple linear regression (uncheck for 2nd-degree polynomial)*:</label>
             <input type="checkbox" id="use_linear" name="use_linear" checked disabled><br>
 
-            <label for="num_paths">Use antithetic variates for variance reduction*:</label>
-            <input type="checkbox" id="use_linear" name="use_linear" disabled><br>
 
             <div style="
                 width: 100%;
@@ -149,6 +152,7 @@
                 var num_paths = parseInt(document.getElementById('num_paths').value);
                 var is_european = document.getElementById('is_european').checked ? 1 : 0;
                 var num_threads = parseInt(document.getElementById('num_threads').value);
+                var reduce_variance = document.getElementById('reduce_variance').checked ? 1 : 0;
 
                 // Call the WASM function
                 var result = Module.ccall(
@@ -164,6 +168,7 @@
                         'number', // is_call (use number to represent boolean)
                         'number', // num_paths
                         'number', // is_european (use number to represent boolean)
+                        'number', // reduce_variance (use number to represent boolean)
                     ],
                     [ // Arguments
                         S0,         // S0
@@ -175,6 +180,7 @@
                         is_call,    // is_call (1 for true, 0 for false)
                         num_paths,  // num_paths
                         is_european,// is_european (1 for true, 0 for false)
+                        reduce_variance,
                     ]
                 );
 

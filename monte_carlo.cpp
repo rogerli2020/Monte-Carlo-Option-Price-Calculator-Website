@@ -31,17 +31,20 @@
 
 extern "C" {
     double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
-        int N, double K, bool is_call, int num_paths, bool is_european);
+        int N, double K, bool is_call, int num_paths, bool is_european, bool reduce_variance);
 
     double lsmc_american_option_pricing_WASM(
         double S0, double mu, double sigma, double T, 
-        int N, double K, bool is_call, int num_paths, bool is_european
+        int N, double K, bool is_call, int num_paths, bool is_european, bool reduce_variance
     ) {
-        return lsmc_american_option_pricing(S0, mu, sigma, T, N, K, is_call, num_paths, is_european);
+        return lsmc_american_option_pricing(S0, mu, sigma, T, N, K, 
+            is_call, num_paths, is_european, reduce_variance);
     }
 }
 
-void simulate_GBM_path(double S0, double mu, double sigma, double T, int N, std::vector<double>& path)
+void simulate_GBM_path(double S0, double mu, double sigma, 
+    double T, int N, int path_index,
+    std::vector<std::vector<double>>& paths, int true_path_nums, bool reduce_variance)
 {
     std::random_device rd;
     std::mt19937 gen(rd());     // random seed.
@@ -50,6 +53,8 @@ void simulate_GBM_path(double S0, double mu, double sigma, double T, int N, std:
 
     double dt = T / N;
 
+    std::vector<double>& path = paths[path_index];
+
     path[0] = S0;
 
     // Generate GBM path
@@ -57,7 +62,13 @@ void simulate_GBM_path(double S0, double mu, double sigma, double T, int N, std:
         double z_i = d(gen);  // random sample from normal distribution.
 
         // GBM formula (Hull 21.16):
-        path[i] = path[i-1] * exp( (mu - sigma*sigma*0.5)*dt + (sigma*z_i*sqrt(dt)) );
+        double deltaWt = (sigma*z_i*sqrt(dt));
+        path[i] = path[i-1] * exp( (mu - sigma*sigma*0.5)*dt + deltaWt );
+        if (reduce_variance)
+        {
+            std::vector<double>& antithetic_path = paths[path_index + true_path_nums];
+            antithetic_path[i] = antithetic_path[i-1] * exp( (mu - sigma*sigma*0.5)*dt - deltaWt );
+        }
     }
 }
 
@@ -67,11 +78,22 @@ double discount_price(double S, double r, double t)
 }
 
 void simulate_price_paths(double S0, double mu, double sigma, double T, 
-    int N, double K, bool is_call, std::vector<std::vector<double>>& paths)
+    int N, double K, bool is_call, std::vector<std::vector<double>>& paths, bool reduce_variance)
 {
-    for (auto rowIt = paths.begin(); rowIt != paths.end(); ++rowIt)
+    int true_path_nums = reduce_variance ? paths.size()/2 : paths.size();
+    for (int path = 0; path < true_path_nums; path++)
     {
-        simulate_GBM_path(S0, mu, sigma, T, N, *rowIt);
+        simulate_GBM_path(
+            S0,
+            mu,
+            sigma,
+            T,
+            N,
+            path,
+            paths,
+            true_path_nums,
+            reduce_variance
+        );
     }
 }
 
@@ -174,19 +196,21 @@ void update_optimal_values(int cur_exercise_pt, std::vector<double>& regression_
 }
 
 double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
-    int N, double K, bool is_call, int num_paths, bool is_european=false)
+    int N, double K, bool is_call, int num_paths, bool is_european=false, 
+    bool reduce_variance=false)
 {
     // daily-fy data:
     mu = mu / 365;
     sigma = sigma / sqrt(365);
 
     // initialize matrices.
+    if (reduce_variance) num_paths = num_paths * 2;
     std::vector<std::vector<double>> simulated_price_paths(num_paths, std::vector<double>(N+1, 0.0));
     std::vector<int> optimal_exercise_pt(num_paths, -1);
     std::vector<double> optimal_exercise_payoff(num_paths);
 
     // perform GBM simulation for underlying asset price.
-    simulate_price_paths(S0, mu, sigma, T, N, K, is_call, simulated_price_paths);
+    simulate_price_paths(S0, mu, sigma, T, N, K, is_call, simulated_price_paths, reduce_variance);
 
     // handle first iteration.
     get_immediate_payoff_samples(K, is_call, N,
@@ -236,6 +260,7 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     }
 
     double estimated_price = sum / num_paths;
+    if (reduce_variance) estimated_price = estimated_price * 2;
 
     std::cout << estimated_price << std::endl;
 
