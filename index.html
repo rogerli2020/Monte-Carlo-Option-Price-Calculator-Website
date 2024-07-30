@@ -3,8 +3,19 @@
 <head>
     <title>Monte Carlo Options Calculator</title>
     <style>
+        a:link {
+        color: pink;
+        background-color: transparent;
+        text-decoration: underline;
+        }
+        a:visited {
+        color: pink;
+        background-color: transparent;
+        text-decoration: underline;
+        }
         body {
-            background-color: #d4d4a0;
+            background-color: #1f1f21;
+            color: aliceblue;
             /* font-family: Arial;  */
         }
         .footer {
@@ -40,6 +51,32 @@
 </head>
 <body>
     <div id="container">
+
+        <div id="overlay" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        ">
+            <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            ">
+                <img 
+                    src="https://cdn.pixabay.com/animation/2022/11/10/04/08/04-08-25-728_512.gif"
+                    style="width: 100px;"
+                >
+                <h4>Calculating...</h4>
+            </div>
+        </div>
+
         <h1>Least-Squares Monte Carlo Options Pricing Calculator</h1>
         <p>This calculator provides estimations for the value of a given American (or European) options using the Least-Squares Monte Carlo method. This calculator assumes constant volatility, 0% dividend yield, and continuously compounded risk-free rate.</p>
         <p>Visit the GitHub repository <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">here</a>.</p>
@@ -77,7 +114,7 @@
             <label for="num_paths">Number of Simulation Paths:</label>
             <input type="number" id="num_paths" name="num_paths" placeholder="10000" required><br>
 
-            <label for="reduce_variance">Use antithetic variates for variance reduction*:</label>
+            <label for="reduce_variance">Use antithetic variates for variance reduction:</label>
             <input type="checkbox" id="reduce_variance" name="reduce_variance"><br>
 
             <label for="num_threads">Number of threads for GBM price paths simulation*:</label>
@@ -97,7 +134,7 @@
 
             <div style="
                 border-radius: 5px;
-                border-color: black;
+                border-color: white;
                 border-style: dotted;
                 padding: 1px;
                 text-align: center;
@@ -120,6 +157,9 @@
         </div>
 
     </div>
+    <div >
+
+    </div>
 
     </div>
 
@@ -138,6 +178,7 @@
     <script>
         function calculateOptionPrice() {
             document.getElementById('result').innerText = "Calculating...";
+            document.getElementById('overlay').style.display = 'flex';
 
             // Use setTimeout to allow the "Calculating..." text to be rendered
             setTimeout(function() {
@@ -185,7 +226,10 @@
                 );
 
                 // Display the result
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
                 document.getElementById('result').innerText = '$' + Math.round(result * 100)/100;
+                
             }, 0);
         }
     </script>

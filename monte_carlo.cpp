@@ -56,6 +56,7 @@ void simulate_GBM_path(double S0, double mu, double sigma,
     std::vector<double>& path = paths[path_index];
 
     path[0] = S0;
+    if (reduce_variance) paths[path_index + true_path_nums][0] = S0;
 
     // Generate GBM path
     for (int i = 1; i < path.size(); ++i) {
@@ -98,22 +99,19 @@ void simulate_price_paths(double S0, double mu, double sigma, double T,
 }
 
 bool get_immediate_payoff_samples(double K, bool is_call, int exercise_point,
-    std::vector<std::vector<double>>& price_matrix, std::vector<double>& cfs)
+    std::vector<std::vector<double>>& price_matrix, std::vector<double>& optimal_cfs)
 {
-    bool hasInTheMoneyPaths = false;
+    bool has_in_the_money_paths = false;
     for (int cur_row = 0; cur_row < price_matrix.size(); cur_row++)
     {
         double payoff = 
             is_call ? 
             std::max(price_matrix[cur_row][exercise_point] - K, 0.0) :
             std::max(K - price_matrix[cur_row][exercise_point], 0.0);
-        cfs[cur_row] = payoff;
-        if (payoff > 0.0) {
-            hasInTheMoneyPaths = true;
-        }
+        optimal_cfs[cur_row] = payoff;
+        if (payoff > 0.0) has_in_the_money_paths = true;
     }
-    if (!hasInTheMoneyPaths) return false;
-    return true;
+    return has_in_the_money_paths;
 }
 
 
@@ -151,7 +149,7 @@ bool get_continuation_samples(std::vector<int>& optimal_exercise_pt,
     std::vector<double>& optimal_exercise_payoff, double r, int cur_t, double dt, 
     std::vector<double>& discounted_cont_val_samples)
 {
-    bool hasContinuationValues = false;
+    bool has_continuation_values = false;
     for (int cur_path = 0; cur_path < discounted_cont_val_samples.size(); cur_path++)
     {
         if (optimal_exercise_pt[cur_path] == -1)
@@ -165,11 +163,10 @@ bool get_continuation_samples(std::vector<int>& optimal_exercise_pt,
             (optimal_exercise_pt[cur_path] - cur_t) * dt
         );
         if (discounted_cont_val_samples[cur_path] > 0.0) {
-            hasContinuationValues = true;
+            has_continuation_values = true;
         }
     }
-    if (!hasContinuationValues) return false;
-    return true;
+    return has_continuation_values;
 }
 
 double get_estimated_continuation_value(std::vector<double>& regression_results, double x)
@@ -236,13 +233,11 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
                     simulated_price_paths, immediate_payoff_samples
                 )
             ) continue;
-            if (
-                !get_continuation_samples(
-                    optimal_exercise_pt, optimal_exercise_payoff, 
-                    mu, cur_exercise_pt, T/N, 
-                    discounted_continuation_value_samples
-                )
-            ) continue;
+            get_continuation_samples(
+                optimal_exercise_pt, optimal_exercise_payoff, 
+                mu, cur_exercise_pt, T/N, 
+                discounted_continuation_value_samples
+            );
             perform_linear_regression(immediate_payoff_samples, 
                 discounted_continuation_value_samples, regression_results);
             update_optimal_values(cur_exercise_pt, regression_results, 
@@ -260,14 +255,6 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     }
 
     double estimated_price = sum / num_paths;
-    if (reduce_variance) 
-    {
-        // BUG HERE!!! Why is it half the expected price??
-        estimated_price = estimated_price * 2;  // quick lazy workaround!
-        // BUG HERE!!! why is the return higher than the expected price by the strike price when put??
-        if (!is_call) estimated_price = estimated_price - K; // quick lazy workaround!
-
-    }
 
     std::cout << estimated_price << std::endl;
 
