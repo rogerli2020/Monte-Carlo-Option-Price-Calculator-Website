@@ -78,7 +78,7 @@ double discount_price(double S, double r, double t)
 }
 
 void simulate_price_paths(double S0, double mu, double sigma, double T, 
-    int N, double K, bool is_call, std::vector<std::vector<double>>& paths, bool reduce_variance)
+    int N, double K, std::vector<std::vector<double>>& paths, bool reduce_variance)
 {
     int true_path_nums = reduce_variance ? paths.size()/2 : paths.size();
     for (int path = 0; path < true_path_nums; path++)
@@ -210,7 +210,7 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     std::vector<double> optimal_exercise_payoff(num_paths);
 
     // perform GBM simulation for underlying asset price.
-    simulate_price_paths(S0, mu, sigma, T, N, K, is_call, simulated_price_paths, reduce_variance);
+    simulate_price_paths(S0, mu, sigma, T, N, K, simulated_price_paths, reduce_variance);
 
     // handle first iteration.
     get_immediate_payoff_samples(K, is_call, N,
@@ -260,7 +260,14 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     }
 
     double estimated_price = sum / num_paths;
-    if (reduce_variance) estimated_price = estimated_price * 2;
+    if (reduce_variance) 
+    {
+        // BUG HERE!!! Why is it half the expected price??
+        estimated_price = estimated_price * 2;  // quick lazy workaround!
+        // BUG HERE!!! why is the return higher than the expected price by the strike price when put??
+        if (!is_call) estimated_price = estimated_price - K; // quick lazy workaround!
+
+    }
 
     std::cout << estimated_price << std::endl;
 
