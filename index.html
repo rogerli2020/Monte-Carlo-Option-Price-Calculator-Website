@@ -21,15 +21,16 @@
         .footer {
             display: flex;
             flex-direction: row;
-            justify-content: center; /* Align children to the bottom */
-            width: 100%; /* Adjust as needed */
+            justify-content: center;
+            width: 100%;
             color: rgb(62, 59, 59);
             padding: 10px;
-            gap: 50px; /* Space between items */
+            gap: 50px;
         }
         #container {
             max-width: 600px;
-            margin: auto;
+            margin-left: auto;
+            margin-right: auto;
         }
         #optionForm label {
             display: inline-block;
@@ -46,6 +47,25 @@
         }
         #optionForm button {
             margin-top: 20px;
+        }
+        #squares-container {
+            display: flex; 
+            flex-direction: row; 
+            overflow-x: auto; 
+        }
+        #squares-container-top {
+            display: flex; 
+            flex-direction: row; 
+            overflow-x: auto; 
+        }
+        .square {
+            width: 15px;
+            height: 75px;
+            margin-top: 10px;
+        }
+        .square-top {
+            width: 15px;
+            height: 5px;
         }
     </style>
 </head>
@@ -73,12 +93,23 @@
                     src="https://cdn.pixabay.com/animation/2022/11/10/04/08/04-08-25-728_512.gif"
                     style="width: 100px;"
                 >
-                <h4>Calculating...</h4>
+                <h3>Calculating...</h3>
+                <h4 id="calculationProgress"></h4>
             </div>
         </div>
 
+        <div id="squares-container-top"></div>
+
         <h1>Least-Squares Monte Carlo Options Pricing Calculator</h1>
-        <p>This calculator provides estimations for the value of a given American (or European) options using the Least-Squares Monte Carlo method. This calculator assumes constant volatility, 0% dividend yield, and continuously compounded risk-free rate.</p>
+
+        <!-- <div style="
+            justify-content: center;
+            align-items: center;"
+        >
+            <div style="text-align: center;">⬤ ⬤ ⬤</div>
+        </div> -->
+
+        <p>This calculator provides estimations for the value of a given American (or European) option using the Least-Squares Monte Carlo method. This calculator assumes constant volatility, no dividend yield for the underlying asset, and continuously compounded risk-free rate.</p>
         <p>Visit the GitHub repository <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">here</a>.</p>
         <p><i>All fields are required.</i></p>
         <hr/>
@@ -155,9 +186,12 @@
         <div>
             <a href="https://rogerli.net/">Roger Li</a>
         </div>
-
     </div>
-    <div >
+
+    <div id="squares-container">
+    </div>
+
+    <div>
 
     </div>
 
@@ -176,6 +210,10 @@
     <script src="lsmc_calculator.js"></script>
 
     <script>
+
+
+
+
         function calculateOptionPrice() {
             document.getElementById('result').innerText = "Calculating...";
             document.getElementById('overlay').style.display = 'flex';
@@ -232,6 +270,41 @@
                 
             }, 0);
         }
+
+
+
+        // Function to generate a random color
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Function to create a square element
+        function createSquare(squareType='bottom') {
+            const square = document.createElement('div');
+            square.className = squareType === 'top' ? 'square-top' : 'square';
+            square.style.backgroundColor = getRandomColor();
+            return square;
+        }
+
+        // Render squares
+        function renderSquares(num) {
+            const container = document.getElementById('squares-container');
+            const containerTop = document.getElementById('squares-container-top');
+            for (let i = 0; i < num; i++) {
+                container.appendChild(createSquare());
+            }
+            // for (let i = 0; i < num; i++) {
+            //     containerTop.appendChild(createSquare('top'));
+            // }
+        }
+
+        // Call renderSquares with the desired number of squares
+        renderSquares(40);
     </script>
 </body>
 </html>

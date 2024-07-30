@@ -197,7 +197,7 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     bool reduce_variance=false)
 {
 
-    std::cout << "New calculation starting..." << std::endl;
+    std::cout << "New calculation:" << std::endl;
     std::cout << "\t S0\t" << S0 << std::endl;
     std::cout << "\t mu\t" << mu << std::endl;
     std::cout << "\t sigma\t" << sigma << std::endl;
@@ -208,7 +208,7 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     std::cout << "\t num_paths\t" << num_paths << std::endl;
     std::cout << "\t is_european\t" << is_european << std::endl;
     std::cout << "\t reduce_variance\t" << reduce_variance << std::endl;
-    std::cout << reduce_variance << std::endl;
+    std::cout << "Starting calculation..." << std::endl;
 
     // daily-fy data:
     mu = mu / 365;
