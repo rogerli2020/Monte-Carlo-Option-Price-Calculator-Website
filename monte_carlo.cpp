@@ -196,6 +196,20 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     int N, double K, bool is_call, int num_paths, bool is_european=false, 
     bool reduce_variance=false)
 {
+
+    std::cout << "New calculation starting..." << std::endl;
+    std::cout << "\t S0\t" << S0 << std::endl;
+    std::cout << "\t mu\t" << mu << std::endl;
+    std::cout << "\t sigma\t" << sigma << std::endl;
+    std::cout << "\t T\t" << T << std::endl;
+    std::cout << "\t N\t" << N << std::endl;
+    std::cout << "\t K\t" << K << std::endl;
+    std::cout << "\t is_call\t" << is_call << std::endl;
+    std::cout << "\t num_paths\t" << num_paths << std::endl;
+    std::cout << "\t is_european\t" << is_european << std::endl;
+    std::cout << "\t reduce_variance\t" << reduce_variance << std::endl;
+    std::cout << reduce_variance << std::endl;
+
     // daily-fy data:
     mu = mu / 365;
     sigma = sigma / sqrt(365);
@@ -206,8 +220,12 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     std::vector<int> optimal_exercise_pt(num_paths, -1);
     std::vector<double> optimal_exercise_payoff(num_paths);
 
+    std::cout << "Performing GBM price simulations..." << std::endl;
+
     // perform GBM simulation for underlying asset price.
     simulate_price_paths(S0, mu, sigma, T, N, K, simulated_price_paths, reduce_variance);
+
+    std::cout << "Performing backward induction to determine optimal exercise points..." << std::endl;
 
     // handle first iteration.
     get_immediate_payoff_samples(K, is_call, N,
@@ -245,6 +263,8 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
         }
     }
 
+    std::cout << "Discounting and averaging optimal payoffs..." << std::endl;
+
     // add and average.
     double sum = 0.0;
     for (int path = 0; path < optimal_exercise_pt.size(); path++)
@@ -256,7 +276,7 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
 
     double estimated_price = sum / num_paths;
 
-    std::cout << estimated_price << std::endl;
+    std::cout << "Final estimated price: " << estimated_price << std::endl;
 
     return estimated_price;
 }
