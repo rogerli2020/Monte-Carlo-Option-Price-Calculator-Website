@@ -116,25 +116,25 @@
         <form id="optionForm">
             <h3>Valuation Parameters</h3>
             <label for="S0">Initial Stock Price (S0, in $):</label>
-            <input type="number" id="S0" name="S0" step="0.01" placeholder="100.00" required><br>
+            <input type="number" id="S0" name="S0" step="0.01" placeholder="100.00" value="100.00" required><br>
 
             <label for="mu">Annual Risk-free Rate (r):</label>
-            <input type="number" id="mu" name="mu" step="0.0001" placeholder="0.05" required><br>
+            <input type="number" id="mu" name="mu" step="0.0001" placeholder="0.05" value="0.05" required><br>
 
             <label for="sigma">Annual Volatility (sigma):</label>
-            <input type="number" id="sigma" name="sigma" step="0.0001" placeholder="0.25" required><br>
+            <input type="number" id="sigma" name="sigma" step="0.0001" placeholder="0.25" value="0.25" required><br>
 
             <label for="T">Time to Maturity (T, in days):</label>
-            <input type="number" id="T" name="T" placeholder="30" required><br>
+            <input type="number" id="T" name="T" placeholder="365" value="365" required><br>
 
             <label for="N">Number of Time Steps (N):</label>
-            <input type="number" id="N" name="N" placeholder="300" required><br>
+            <input type="number" id="N" name="N" placeholder="3650" value="365" required><br>
 
             <label for="K">Strike Price (K, in $):</label>
-            <input type="number" id="K" name="K" placeholder="75.00" step="0.01" required><br>
+            <input type="number" id="K" name="K" placeholder="120.00" step="0.01" value="120.00" required><br>
 
             <label for="is_call">Is Call Option (uncheck if Put):</label>
-            <input type="checkbox" id="is_call" name="is_call" checked><br>
+            <input type="checkbox" id="is_call" name="is_call"><br>
 
             <label for="is_european">Is European Option (uncheck if American):</label>
             <input type="checkbox" id="is_european" name="is_european"><br>
@@ -143,10 +143,10 @@
             <h3>Simulation Parameters</h3>
 
             <label for="num_paths">Number of Simulation Paths:</label>
-            <input type="number" id="num_paths" name="num_paths" placeholder="10000" required><br>
+            <input type="number" id="num_paths" name="num_paths" placeholder="10000" value="10000" required><br>
 
             <label for="reduce_variance">Use antithetic variates for variance reduction:</label>
-            <input type="checkbox" id="reduce_variance" name="reduce_variance"><br>
+            <input type="checkbox" id="reduce_variance" name="reduce_variance" checked><br>
 
             <label for="num_threads">Number of threads for GBM price paths simulation*:</label>
             <input type="number" id="num_threads" name="num_threads" required value="1" disabled><br>
@@ -158,9 +158,9 @@
             <div style="
                 width: 100%;
                 text-align: center;
-                padding: 10px;
                 ">
                 <button type="button" onclick="calculateOptionPrice()">Calculate</button>
+                <div style="font-size: small;"><em>(Use the console to get more calculation information.)</em></div><br>
             </div>
 
             <div style="
