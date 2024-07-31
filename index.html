@@ -14,9 +14,8 @@
         text-decoration: underline;
         }
         body {
-            background-color: #1f1f21;
-            color: aliceblue;
-            /* font-family: Arial;  */
+            background-color: #6c6c77;
+            color: rgb(235, 246, 255);
         }
         .footer {
             display: flex;
@@ -31,6 +30,11 @@
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
+            background-color: #000000a5;
+            padding-top: 50px;
+            padding-left: 50px;
+            padding-right: 50px;
+            border-radius: 10px;
         }
         #optionForm label {
             display: inline-block;
@@ -93,21 +97,14 @@
                     src="https://cdn.pixabay.com/animation/2022/11/10/04/08/04-08-25-728_512.gif"
                     style="width: 100px;"
                 >
-                <h3>Calculating...</h3>
-                <h4 id="calculationProgress"></h4>
+                <h2 style="margin: 0px; font-family: Arial, Helvetica, sans-serif;">Calculating...</h2>
+                <p style="font-family: Arial, Helvetica, sans-serif;">Enable browser console to view more calculation details.</p>
             </div>
         </div>
 
         <div id="squares-container-top"></div>
 
         <h1>Least-Squares Monte Carlo Options Pricing Calculator</h1>
-
-        <!-- <div style="
-            justify-content: center;
-            align-items: center;"
-        >
-            <div style="text-align: center;">⬤ ⬤ ⬤</div>
-        </div> -->
 
         <p>This calculator provides estimations for the value of a given American (or European) option using the Least-Squares Monte Carlo method. This calculator assumes constant volatility, no dividend yield for the underlying asset, and continuously compounded risk-free rate.</p>
         <p>Visit the GitHub repository <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">here</a>.</p>
@@ -127,9 +124,6 @@
             <label for="T">Time to Maturity (T, in days):</label>
             <input type="number" id="T" name="T" placeholder="365" value="365" required><br>
 
-            <label for="N">Number of Time Steps (N):</label>
-            <input type="number" id="N" name="N" placeholder="3650" value="365" required><br>
-
             <label for="K">Strike Price (K, in $):</label>
             <input type="number" id="K" name="K" placeholder="120.00" step="0.01" value="120.00" required><br>
 
@@ -141,6 +135,9 @@
 
 
             <h3>Simulation Parameters</h3>
+
+            <label for="N">Number of Time Steps (N):</label>
+            <input type="number" id="N" name="N" placeholder="3650" value="365" required><br>
 
             <label for="num_paths">Number of Simulation Paths:</label>
             <input type="number" id="num_paths" name="num_paths" placeholder="10000" value="10000" required><br>
@@ -160,25 +157,31 @@
                 text-align: center;
                 ">
                 <button type="button" onclick="calculateOptionPrice()">Calculate</button>
-                <div style="font-size: small;"><em>(Use the console to get more calculation information.)</em></div><br>
-            </div>
+            </div><br/>
 
             <div style="
-                border-radius: 5px;
-                border-color: white;
+                border-radius: 10px;
+                border-color: black;
                 border-style: dotted;
-                padding: 1px;
+                padding: 5px;
                 text-align: center;
+                background-color: #484848a5;
             ">
                 <p>Estimated Price</p>
-                <h1 id="result" style="font-family: Arial, Helvetica, sans-serif; ">$0.0</h1>
+                <h1 id="result" style="
+                    font-family: Arial, Helvetica, sans-serif; 
+                    text-shadow: 0 0 15px black;
+                    margin:10px"
+                >
+                    $0.0
+                </h1>
+                <small id="timer"></small>
             </div>
 
             <p>* Feature under construction or not working properly.</p>
         </form>
-    
-    <hr/>
-    
+
+    <hr style="margin-top: 75px;"/>
     <div class="footer">
         <div>
             <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">GitHub</a>
@@ -217,6 +220,7 @@
         function calculateOptionPrice() {
             document.getElementById('result').innerText = "Calculating...";
             document.getElementById('overlay').style.display = 'flex';
+            const startTime = performance.now();
 
             // Use setTimeout to allow the "Calculating..." text to be rendered
             setTimeout(function() {
@@ -267,6 +271,9 @@
                 document.getElementById('overlay').style.display = 'none';
                 document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
                 document.getElementById('result').innerText = '$' + Math.round(result * 100)/100;
+                const endTime = performance.now();
+                const timeTaken = endTime - startTime; // Time in milliseconds
+                document.getElementById('timer').textContent = `Time taken: ${ (timeTaken/1000).toFixed(2)} seconds`;
                 
             }, 0);
         }
