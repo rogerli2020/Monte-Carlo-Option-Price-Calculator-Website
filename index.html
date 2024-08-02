@@ -269,8 +269,14 @@
                     );
                 } catch (e)
                 {
-                    alert(`Error. Please check browser console for details.\n(Perhaps the requested computation is too intensive?)`);
-                    location.reload();
+                    alert(`Error. Please check browser console for details.\n(Perhaps the requested computation is too computationally expensive?)`);
+                    document.getElementById('overlay').style.display = 'none';
+                    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('result').innerText = `ERROR`;
+                    const endTime = performance.now();
+                    const timeTaken = endTime - startTime; // Time in milliseconds
+                    document.getElementById('timer').textContent = `Time taken: - seconds`;
+                    return;
                 }
 
                 // Display the result
