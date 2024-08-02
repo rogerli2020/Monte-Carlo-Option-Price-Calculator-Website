@@ -238,34 +238,40 @@
                 var reduce_variance = document.getElementById('reduce_variance').checked ? 1 : 0;
 
                 // Call the WASM function
-                var result = Module.ccall(
-                    'lsmc_american_option_pricing_WASM', // Name of the C++ function
-                    'number', // Return type
-                    [ // Argument types
-                        'number', // S0
-                        'number', // mu
-                        'number', // sigma
-                        'number', // T
-                        'number', // N
-                        'number', // K
-                        'number', // is_call (use number to represent boolean)
-                        'number', // num_paths
-                        'number', // is_european (use number to represent boolean)
-                        'number', // reduce_variance (use number to represent boolean)
-                    ],
-                    [ // Arguments
-                        S0,         // S0
-                        mu,         // mu
-                        sigma,      // sigma
-                        T,          // T
-                        N,          // N
-                        K,          // K
-                        is_call,    // is_call (1 for true, 0 for false)
-                        num_paths,  // num_paths
-                        is_european,// is_european (1 for true, 0 for false)
-                        reduce_variance,
-                    ]
-                );
+                try {
+                    var result = Module.ccall(
+                        'lsmc_american_option_pricing_WASM', // Name of the C++ function
+                        'number', // Return type
+                        [ // Argument types
+                            'number', // S0
+                            'number', // mu
+                            'number', // sigma
+                            'number', // T
+                            'number', // N
+                            'number', // K
+                            'number', // is_call (use number to represent boolean)
+                            'number', // num_paths
+                            'number', // is_european (use number to represent boolean)
+                            'number', // reduce_variance (use number to represent boolean)
+                        ],
+                        [ // Arguments
+                            S0,         // S0
+                            mu,         // mu
+                            sigma,      // sigma
+                            T,          // T
+                            N,          // N
+                            K,          // K
+                            is_call,    // is_call (1 for true, 0 for false)
+                            num_paths,  // num_paths
+                            is_european,// is_european (1 for true, 0 for false)
+                            reduce_variance,
+                        ]
+                    );
+                } catch (e)
+                {
+                    alert(`Error. Please check browser console for details.\n(Perhaps the requested computation is too intensive?)`);
+                    location.reload();
+                }
 
                 // Display the result
                 document.getElementById('overlay').style.display = 'none';
