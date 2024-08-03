@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Monte Carlo Options Calculator</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="mystyle.css">
 </head>
 <body>
@@ -42,7 +43,7 @@
         <p><i>All fields are required.</i></p>
         <hr/>
         <form id="optionForm">
-            <h3 class="section-header">▼ VALUATION PARAMETERS</h3>
+            <h3 class="section-header">VALUATION PARAMETERS</h3>
             <label for="S0">Initial Stock Price (S0, in $):</label>
             <input type="number" id="S0" name="S0" step="0.01" placeholder="100.00" value="100.00" required><br>
 
@@ -65,7 +66,7 @@
             <input type="checkbox" id="is_european" name="is_european"><br>
 
 
-            <h3 class="section-header">▼ SIMULATION PARAMETERS</h3>
+            <h3 class="section-header">SIMULATION PARAMETERS</h3>
 
             <label for="N">Number of Time Steps (N):</label>
             <input type="number" id="N" name="N" placeholder="3650" value="365" required><br>
@@ -87,17 +88,10 @@
                 width: 100%;
                 text-align: center;
                 ">
-                <button type="button" id="calculation-button" onclick="calculateOptionPrice()">Calculate</button>
+                <button type="button" id="calculation-button" onclick="createQueryString()">Submit</button>
             </div><br/>
 
-            <div style="
-                border-radius: 10px;
-                border-color: black;
-                border-style: dotted;
-                padding: 5px;
-                text-align: center;
-                background-color: #484848a5;
-            ">
+            <div id="price-box">
                 <p>Estimated Price</p>
                 <h1 id="result">
                     $0.0
@@ -132,6 +126,7 @@
         var Module = {
             onRuntimeInitialized: function() {
                 console.log("WASM module loaded and initialized.");
+                parseQueryString(); // parse string after WASM is initialzied!
             }
         };
     </script>
@@ -141,6 +136,49 @@
 
     <script>
 
+        function createQueryString() {
+            const form = document.getElementById('optionForm');
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+            window.location.search = queryString;
+        }
+
+        function parseQueryString() {
+            // reset checkbox data (since they're technically optional)
+            document.getElementById('reduce_variance').checked = false;
+            document.getElementById('is_call').checked = false;
+            document.getElementById('is_european').checked = false;
+
+            console.log(`Query String: ${window.location.search}`);
+            if (!window.location.search) return;
+            const params = new URLSearchParams(window.location.search);
+            let valid = true;
+            let errorMessage = "The following inputs are invalid or unparsable:\n";
+            for (const [key, value] of params.entries()) {
+                const input = document.getElementById(key);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = value === 'on';
+                    } else {
+                        input.value = value;
+                        // Validate numeric inputs
+                        if (input.type === 'number') {
+                            const parsedValue = parseFloat(value);
+                            if (isNaN(parsedValue)) {
+                                valid = false;
+                                errorMessage += `- ${key}: "${value}"\n`;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!valid) {
+                alert(errorMessage);
+                return;
+            }
+            calculateOptionPrice();
+        }
 
 
 
@@ -217,9 +255,6 @@
             }, 0);
         }
 
-
-
-        // Function to generate a random color
         function getRandomColor() {
             const letters = '0123456789ABCDEF';
             let color = '#';
@@ -229,7 +264,6 @@
             return color;
         }
 
-        // Function to create a square element
         function createSquare(squareType='bottom') {
             const square = document.createElement('div');
             square.className = squareType === 'top' ? 'square-top' : 'square';
@@ -237,19 +271,14 @@
             return square;
         }
 
-        // Render squares
         function renderSquares(num) {
             const container = document.getElementById('squares-container');
             const containerTop = document.getElementById('squares-container-top');
             for (let i = 0; i < num; i++) {
                 container.appendChild(createSquare());
             }
-            // for (let i = 0; i < num; i++) {
-            //     containerTop.appendChild(createSquare('top'));
-            // }
         }
 
-        // Call renderSquares with the desired number of squares
         renderSquares(80);
     </script>
 </body>

@@ -67,7 +67,7 @@ p.bold {
     gap: 50px;
 }
 #container {
-    max-width: 800px;
+    max-width: 600px;
     margin-left: auto;
     margin-right: auto;
     background-color: #000000a5;
@@ -78,7 +78,7 @@ p.bold {
 }
 #optionForm label {
     display: inline-block;
-    width: 400px;
+    width: 300px;
     margin-bottom: 10px;
     padding-bottom: 5px; 
     border-bottom: 1px solid #ffffff3f; 
@@ -86,11 +86,11 @@ p.bold {
 #optionForm input {
     display: inline-block;
     margin-bottom: 20px;
-    font-size: larger;
+    /* font-size: larger; */
     border-bottom: 1px solid #ffffff3f; 
 }
 #optionForm input[type="checkbox"] {
-    transform: scale(1.75); /* Increase the scale as needed */
+    /* transform: scale(1.75); */
 }
 #optionForm h3 {
     margin-top: 20px;
@@ -120,7 +120,7 @@ p.bold {
 }
 .section-header {
     color: rgba(255, 255, 255, 0.4);
-    font-size: 12px;
+    font-size: 14px;
 }
 #result {
     font-family: Arial, Helvetica, sans-serif; 
@@ -139,8 +139,14 @@ p.bold {
     border: none; /* Remove border */
     cursor: pointer; /* Change cursor on hover */
 }
-
-/* Optional: Add hover effect */
 #calculation-button:hover {
     background-color: #0056b3; /* Darker shade on hover */
+}
+#price-box {
+    border-radius: 10px;
+    border-color: black;
+    border-style: dotted;
+    padding: 5px;
+    text-align: center;
+    background-color: #484848a5;
 }
