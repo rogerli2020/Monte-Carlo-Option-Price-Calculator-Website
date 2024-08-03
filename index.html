@@ -2,76 +2,7 @@
 <html>
 <head>
     <title>Monte Carlo Options Calculator</title>
-    <style>
-        a:link {
-        color: pink;
-        background-color: transparent;
-        text-decoration: underline;
-        }
-        a:visited {
-        color: pink;
-        background-color: transparent;
-        text-decoration: underline;
-        }
-        body {
-            background-color: #6c6c77;
-            color: rgb(235, 246, 255);
-        }
-        .footer {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            width: 100%;
-            color: rgb(62, 59, 59);
-            padding: 10px;
-            gap: 50px;
-        }
-        #container {
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            background-color: #000000a5;
-            padding-top: 50px;
-            padding-left: 50px;
-            padding-right: 50px;
-            border-radius: 10px;
-        }
-        #optionForm label {
-            display: inline-block;
-            width: 300px;
-            margin-bottom: 10px;
-        }
-        #optionForm input {
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-        #optionForm h3 {
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-        #optionForm button {
-            margin-top: 20px;
-        }
-        #squares-container {
-            display: flex; 
-            flex-direction: row; 
-            overflow-x: auto; 
-        }
-        #squares-container-top {
-            display: flex; 
-            flex-direction: row; 
-            overflow-x: auto; 
-        }
-        .square {
-            width: 15px;
-            height: 75px;
-            margin-top: 10px;
-        }
-        .square-top {
-            width: 15px;
-            height: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="mystyle.css">
 </head>
 <body>
     <div id="container">
@@ -111,7 +42,7 @@
         <p><i>All fields are required.</i></p>
         <hr/>
         <form id="optionForm">
-            <h3>Valuation Parameters</h3>
+            <h3 class="section-header">▼ VALUATION PARAMETERS</h3>
             <label for="S0">Initial Stock Price (S0, in $):</label>
             <input type="number" id="S0" name="S0" step="0.01" placeholder="100.00" value="100.00" required><br>
 
@@ -134,7 +65,7 @@
             <input type="checkbox" id="is_european" name="is_european"><br>
 
 
-            <h3>Simulation Parameters</h3>
+            <h3 class="section-header">▼ SIMULATION PARAMETERS</h3>
 
             <label for="N">Number of Time Steps (N):</label>
             <input type="number" id="N" name="N" placeholder="3650" value="365" required><br>
@@ -156,7 +87,7 @@
                 width: 100%;
                 text-align: center;
                 ">
-                <button type="button" onclick="calculateOptionPrice()">Calculate</button>
+                <button type="button" id="calculation-button" onclick="calculateOptionPrice()">Calculate</button>
             </div><br/>
 
             <div style="
@@ -168,11 +99,7 @@
                 background-color: #484848a5;
             ">
                 <p>Estimated Price</p>
-                <h1 id="result" style="
-                    font-family: Arial, Helvetica, sans-serif; 
-                    text-shadow: 0 0 15px black;
-                    margin:10px"
-                >
+                <h1 id="result">
                     $0.0
                 </h1>
                 <small id="timer"></small>
@@ -323,7 +250,7 @@
         }
 
         // Call renderSquares with the desired number of squares
-        renderSquares(40);
+        renderSquares(80);
     </script>
 </body>
 </html>
