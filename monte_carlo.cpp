@@ -58,17 +58,19 @@ void simulate_GBM_path(double S0, double mu, double sigma,
     path[0] = S0;
     if (reduce_variance) paths[path_index + true_path_nums][0] = S0;
 
+    double drift_term = (mu - sigma*sigma*0.5)*dt;
+
     // Generate GBM path
     for (int i = 1; i < path.size(); ++i) {
         double z_i = d(gen);  // random sample from normal distribution.
 
         // GBM formula (Hull 21.16):
         double deltaWt = (sigma*z_i*sqrt(dt));
-        path[i] = path[i-1] * exp( (mu - sigma*sigma*0.5)*dt + deltaWt );
+        path[i] = path[i-1] * exp( drift_term + deltaWt );
         if (reduce_variance)
         {
             std::vector<double>& antithetic_path = paths[path_index + true_path_nums];
-            antithetic_path[i] = antithetic_path[i-1] * exp( (mu - sigma*sigma*0.5)*dt - deltaWt );
+            antithetic_path[i] = antithetic_path[i-1] * exp( drift_term - deltaWt );
         }
     }
 }
