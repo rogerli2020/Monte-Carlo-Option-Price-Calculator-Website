@@ -30,14 +30,14 @@
 #include <numeric>
 
 extern "C" {
-    double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
+    double lsmc_american_option_pricing(double S0, double mu, double d, double sigma, double T, 
         int N, double K, bool is_call, int num_paths, bool is_european, bool reduce_variance);
 
     double lsmc_american_option_pricing_WASM(
-        double S0, double mu, double sigma, double T, 
+        double S0, double mu, double d, double sigma, double T, 
         int N, double K, bool is_call, int num_paths, bool is_european, bool reduce_variance
     ) {
-        return lsmc_american_option_pricing(S0, mu, sigma, T, N, K, 
+        return lsmc_american_option_pricing(S0, mu, d, sigma, T, N, K, 
             is_call, num_paths, is_european, reduce_variance);
     }
 }
@@ -194,7 +194,7 @@ void update_optimal_values(int cur_exercise_pt, std::vector<double>& regression_
     }
 }
 
-double lsmc_american_option_pricing(double S0, double mu, double sigma, double T, 
+double lsmc_american_option_pricing(double S0, double mu, double d, double sigma, double T, 
     int N, double K, bool is_call, int num_paths, bool is_european=false, 
     bool reduce_variance=false)
 {
@@ -202,6 +202,7 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
     std::cout << "New calculation:" << std::endl;
     std::cout << "\t S0\t" << S0 << std::endl;
     std::cout << "\t mu\t" << mu << std::endl;
+    std::cout << "\t d\t" << d << std::endl;
     std::cout << "\t sigma\t" << sigma << std::endl;
     std::cout << "\t T\t" << T << std::endl;
     std::cout << "\t N\t" << N << std::endl;
@@ -214,6 +215,8 @@ double lsmc_american_option_pricing(double S0, double mu, double sigma, double T
 
     // daily-fy data:
     mu = mu / 365;
+    d = d / 365;
+    mu = mu - d;
     sigma = sigma / sqrt(365);
 
     // initialize matrices.

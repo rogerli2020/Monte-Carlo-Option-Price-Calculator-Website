@@ -4218,7 +4218,7 @@ var wasmImports = {
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
-var _lsmc_american_option_pricing_WASM = Module['_lsmc_american_option_pricing_WASM'] = createExportWrapper('lsmc_american_option_pricing_WASM', 10);
+var _lsmc_american_option_pricing_WASM = Module['_lsmc_american_option_pricing_WASM'] = createExportWrapper('lsmc_american_option_pricing_WASM', 11);
 var _fflush = createExportWrapper('fflush', 1);
 var _strerror = createExportWrapper('strerror', 1);
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();

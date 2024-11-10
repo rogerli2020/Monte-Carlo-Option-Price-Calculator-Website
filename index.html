@@ -38,7 +38,7 @@
 
         <h1>Least-Squares Monte Carlo Options Pricing Calculator</h1>
 
-        <p>This calculator provides estimations for the value of a given American (or European) option using the Least-Squares Monte Carlo method. This calculator assumes constant volatility, no dividend yield for the underlying asset, and continuously compounded risk-free rate.</p>
+        <p>This calculator provides estimations for the value of a given American (or European) option using the Least-Squares Monte Carlo method. This calculator assumes constant volatility and continuously compounded risk-free rate and dividend yield.</p>
         <p>Visit the GitHub repository <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">here</a>.</p>
         <p><i>All fields are required.</i></p>
         <hr/>
@@ -49,6 +49,9 @@
 
             <label for="mu">Annual Risk-free Rate (r):</label>
             <input type="number" id="mu" name="mu" step="0.0001" placeholder="0.05" value="0.05" required><br>
+
+            <label for="mu">Annual Continuous Dividend Yield (d):</label>
+            <input type="number" id="d" name="d" step="0.0001" placeholder="0.02" value="0.02" required><br>
 
             <label for="sigma">Annual Volatility (sigma):</label>
             <input type="number" id="sigma" name="sigma" step="0.0001" placeholder="0.25" value="0.25" required><br>
@@ -192,6 +195,7 @@
                 // Get form values
                 var S0 = parseFloat(document.getElementById('S0').value);
                 var mu = parseFloat(document.getElementById('mu').value);
+                var d = parseFloat(document.getElementById('d').value);
                 var sigma = parseFloat(document.getElementById('sigma').value);
                 var T = parseInt(document.getElementById('T').value);
                 var N = parseInt(document.getElementById('N').value);
@@ -210,6 +214,7 @@
                         [ // Argument types
                             'number', // S0
                             'number', // mu
+                            'number', // d
                             'number', // sigma
                             'number', // T
                             'number', // N
@@ -222,6 +227,7 @@
                         [ // Arguments
                             S0,         // S0
                             mu,         // mu
+                            d,          // d
                             sigma,      // sigma
                             T,          // T
                             N,          // N
