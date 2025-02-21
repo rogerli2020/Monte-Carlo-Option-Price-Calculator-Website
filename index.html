@@ -38,7 +38,7 @@
 
         <h1>Least-Squares Monte Carlo Options Pricing Calculator</h1>
 
-        <p>This calculator provides estimations for the value of a given American (or European) option using the Least-Squares Monte Carlo method. This calculator assumes constant volatility and continuously compounded risk-free rate and dividend yield.</p>
+        <p>This calculator provides estimations for the value of a given American (or European) option using the Least-Squares Monte Carlo method. This calculator has the same assumptions as the Black-Scholes model, except that it supports American options and dividend-paying options with continuous dividend yield.</p>
         <p>Visit the GitHub repository <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">here</a>.</p>
         <p><i>All fields are required.</i></p>
         <hr/>
@@ -105,7 +105,7 @@
             <p>* Feature under construction or not working properly.</p>
         </form>
 
-    <hr style="margin-top: 75px;"/>
+    <hr style="margin-top: 50px;"/>
     <div class="footer">
         <div>
             <a href="https://github.com/rogerli2020/Monte-Carlo-Option-Price-Calculator-Website">GitHub</a>
@@ -114,10 +114,7 @@
             <a href="https://rogerli.net/">Roger Li</a>
         </div>
     </div>
-
-    <div id="squares-container">
-    </div>
-
+    <hr style="margin-top: 25px; color: transparent"/>
     <div>
 
     </div>
@@ -260,32 +257,6 @@
                 
             }, 100);
         }
-
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
-
-        function createSquare(squareType='bottom') {
-            const square = document.createElement('div');
-            square.className = squareType === 'top' ? 'square-top' : 'square';
-            square.style.backgroundColor = getRandomColor();
-            return square;
-        }
-
-        function renderSquares(num) {
-            const container = document.getElementById('squares-container');
-            const containerTop = document.getElementById('squares-container-top');
-            for (let i = 0; i < num; i++) {
-                container.appendChild(createSquare());
-            }
-        }
-
-        renderSquares(80);
     </script>
 </body>
 </html>
