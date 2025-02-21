@@ -1,0 +1,8 @@
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+git pull
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+
+emcc monte_carlo.cpp -o lsmc_calculator.js -s EXPORTED_FUNCTIONS='["_lsmc_american_option_pricing_WASM"]' -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s ALLOW_MEMORY_GROWTH=1

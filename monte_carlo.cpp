@@ -22,7 +22,6 @@
         8. Discount all cashflow in all paths, get average.
 */
 
-// emcc monte_carlo.cpp -o lsmc_calculator.js -s EXPORTED_FUNCTIONS='["_lsmc_american_option_pricing_WASM"]' -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s ALLOW_MEMORY_GROWTH=1
 
 #include <iostream>
 #include <cmath>
@@ -213,8 +212,12 @@ double lsmc_american_option_pricing(double S0, double mu, double d, double sigma
     std::cout << "\t reduce_variance\t" << reduce_variance << std::endl;
     std::cout << "Starting calculation..." << std::endl;
 
+    // declare discount factor
+    double r;
+
     // daily-fy data:
     mu = mu / 365;
+    r = mu;
     d = d / 365;
     mu = mu - d;
     sigma = sigma / sqrt(365);
@@ -258,7 +261,7 @@ double lsmc_american_option_pricing(double S0, double mu, double d, double sigma
             ) continue;
             get_continuation_samples(
                 optimal_exercise_pt, optimal_exercise_payoff, 
-                mu, cur_exercise_pt, T/N, 
+                r, cur_exercise_pt, T/N, 
                 discounted_continuation_value_samples
             );
             perform_linear_regression(immediate_payoff_samples, 
@@ -276,7 +279,7 @@ double lsmc_american_option_pricing(double S0, double mu, double d, double sigma
     {
         if (optimal_exercise_pt[path] == -1) continue;
         sum += discount_price(optimal_exercise_payoff[path],
-            mu, optimal_exercise_pt[path] * (T/N));
+            r, optimal_exercise_pt[path] * (T/N));
     }
 
     double estimated_price = sum / num_paths;
